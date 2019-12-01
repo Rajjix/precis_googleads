@@ -30,6 +30,7 @@ GET request to `http://localhost:8000/?account_id=5&date=2019-12-1`
 - any additional data passed to query params would be disregarded.
 - in case of wrong data format or type a value should show up.
 
-#### TO DO.
+### Our dummy model tries to do some prediction but I wouldn't trust him!!!
 
-- Create The Modal 😄.
+- TODO:
+  - Write some tests.

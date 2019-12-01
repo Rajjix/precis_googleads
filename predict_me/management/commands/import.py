@@ -1,6 +1,7 @@
 import os
 from django.core.management.base import BaseCommand
 from predict_me.utils import populate_db_with_csv_data
+from predict_me.blackbox import prepare_train_data, train_model
 
 
 class Command(BaseCommand):
@@ -25,4 +26,6 @@ class Command(BaseCommand):
     def import_data(self, file_path):
         """ Delete old data and insert new data """
         populate_db_with_csv_data(file_path)
-        return "Done!!"
+        train_data_path = prepare_train_data()
+        train_model(train_data_path)
+        return "Dummy Model Successfully Trained"

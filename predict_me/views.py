@@ -37,5 +37,5 @@ def call_me_oracle(request):
     weather_data = cache.get(date)
 
     # perform some magic.
-    prediction = predict_data(account_id, {date: weather_data})
+    prediction = predict_data(account_id, weather_data[1])
     return JsonResponse(prediction)
