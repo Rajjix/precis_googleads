@@ -41,10 +41,10 @@ def populate_db_with_csv_data(path):
     # machine gun mode active. try to run as many requests simultanuosly.
     # with aiohttp this would be even faster.
     # Currently we're limited by the number of threads we own.
-    # weather_data = asyncio.run(
-    #     get_weather_forecasts(
-    #         iter(weather_dates), len(weather_dates)))
-    # populate_database_with_weather_data(weather_data)
+    weather_data = asyncio.run(
+        get_weather_forecasts(
+            iter(weather_dates), len(weather_dates)))
+    populate_database_with_weather_data(weather_data)
 
     # Unless the data gets big enough or we add some kind of unique identifier
     # for ads details we can delete them and recreate.
