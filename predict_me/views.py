@@ -3,9 +3,17 @@ from django.core.cache import cache
 from .models import GoogleAdsData
 from .blackbox import predict_data
 from .dark_sky import fetch_weather_data
+from functools import lru_cache
 from .helpers import (
     error_response as err_resp, parse_date, parse_params,
     valid_date_timespan)
+
+
+@lru_cache()
+def get_account_id(account_id):
+    if account_id.isdigit():
+        return GoogleAdsData.objects.filter(account_id=account_id).count()
+    return None
 
 
 def call_me_oracle(request):
@@ -19,15 +27,8 @@ def call_me_oracle(request):
     if not valid_date_timespan(date):
         return err_resp("date must be within a week from today")
 
-    # check if account id is in cache first.
-    if (account_id not in list(cache.get("account_ids") or []) and
-            not GoogleAdsData.objects.filter(account_id=account_id)):
+    if not get_account_id(account_id):
         return err_resp("Account not found")
-
-    # update cache with account id if necessary.
-    if account_id not in cache.get("account_ids", []):
-        cache.set("account_ids", cache.get(
-            "account_ids", []) + [account_id], 600)
 
     # update cache with date if necessary.
     if not cache.get(date):
@@ -35,7 +36,6 @@ def call_me_oracle(request):
         cache.set(date, weather_data, 600)
 
     weather_data = cache.get(date)
-
     # perform some magic.
     prediction = predict_data(account_id, weather_data[1])
     return JsonResponse(prediction)

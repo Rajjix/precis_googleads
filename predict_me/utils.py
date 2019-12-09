@@ -1,5 +1,6 @@
 import csv
 import asyncio
+from datetime import datetime as dt
 from itertools import islice
 from .models import GoogleAdsData, WeatherData
 from .helpers import parse_date
@@ -7,11 +8,12 @@ from .dark_sky import fetch_weather_data
 
 
 def populate_database_with_weather_data(weather_data: dict):
-    weather_objects = (WeatherData(
-        georgian_date=key,
-        weather_data=value
-    ) for key, value in weather_data.items())
-    WeatherData.objects.bulk_create(weather_objects, len(weather_data))
+    if len(weather_data):
+        weather_objects = (WeatherData(
+            georgian_date=key,
+            weather_data=value
+        ) for key, value in weather_data.items())
+        WeatherData.objects.bulk_create(weather_objects, len(weather_data))
 
 
 async def get_weather_forecasts(list_of_dates, length):
@@ -33,10 +35,14 @@ def populate_db_with_csv_data(path):
         ads_data = [x for i, x in enumerate(data)]
 
     # Process date information gathering. we try not to recreate old data.
-    existing_dates = list(x.georgian_date for x in WeatherData.objects.all())
+
+    existing_dates = set(dt.strftime(x.georgian_date, "%Y-%m-%d")
+                         for x in WeatherData.objects.all())
+
     weather_dates = set(x["day"]
-                        for x in ads_data if parse_date(x["day"])
-                        and x not in existing_dates)
+                        for x in ads_data if parse_date(x["day"]))
+
+    weather_dates = weather_dates - existing_dates
 
     # machine gun mode active. try to run as many requests simultanuosly.
     # with aiohttp this would be even faster.
